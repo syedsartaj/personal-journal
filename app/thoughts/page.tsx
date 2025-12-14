@@ -1,67 +1,32 @@
 import Link from 'next/link';
+import { getSmakslyBlogs, type SmakslyBlog } from '@/lib/smaksly-blogs'
 
-const thoughts = [
-  {
-    slug: 'on-creativity',
-    title: 'On Creativity and Fear',
-    excerpt: 'What holds us back from creating? Is it fear of judgment? Fear of imperfection?',
-    date: '2024-11-05',
-    category: 'Creativity'
-  },
-  {
-    slug: 'midnight-thoughts',
-    title: 'Midnight Thoughts',
-    excerpt: 'It is 2 AM and sleep evades me. My mind wanders through memories and dreams...',
-    date: '2024-10-12',
-    category: 'Introspection'
-  },
-  {
-    slug: 'art-of-slow-living',
-    title: 'The Art of Slow Living',
-    excerpt: 'In a world that glorifies busy, I am learning to embrace the beauty of doing less.',
-    date: '2024-03-05',
-    category: 'Lifestyle'
-  },
-  {
-    slug: 'letter-to-younger-self',
-    title: 'A Letter to My Younger Self',
-    excerpt: 'If I could go back and whisper wisdom to the person I was ten years ago...',
-    date: '2024-03-10',
-    category: 'Personal Growth'
-  },
-  {
-    slug: 'gratitude-in-ordinary',
-    title: 'Gratitude in the Ordinary',
-    excerpt: 'Sometimes the most profound moments hide in the mundane.',
-    date: '2024-02-28',
-    category: 'Mindfulness'
-  },
-  {
-    slug: 'growing-through-seasons',
-    title: 'Growing Through the Seasons',
-    excerpt: 'Just like the garden outside my window, I am learning that growth is not always visible.',
-    date: '2024-02-20',
-    category: 'Personal Growth'
-  },
-  {
-    slug: 'conversations-with-strangers',
-    title: 'Conversations with Strangers',
-    excerpt: 'It reminded me that everyone has a story worth hearing.',
-    date: '2024-10-20',
-    category: 'Connection'
-  },
-  {
-    slug: 'autumn-reflections',
-    title: 'Autumn Reflections',
-    excerpt: 'The leaves are falling, and I find myself thinking about change and letting go.',
-    date: '2024-11-15',
-    category: 'Reflection'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// Transform SmakslyBlog to thought format
+function transformBlogToThought(blog: SmakslyBlog) {
+  // Extract excerpt from body (first 100 characters)
+  const excerpt = blog.body
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .substring(0, 100) + '...'
+
+  return {
+    slug: blog.slug,
+    title: blog.title,
+    excerpt,
+    date: new Date(blog.publish_date).toISOString().split('T')[0],
+    category: blog.category || 'Reflection'
   }
-];
+}
 
-const categories = ['All', 'Creativity', 'Introspection', 'Lifestyle', 'Personal Growth', 'Mindfulness', 'Connection', 'Reflection'];
+export default async function ThoughtsPage() {
+  const blogs = await getSmakslyBlogs()
+  const thoughts = blogs.map(transformBlogToThought)
 
-export default function ThoughtsPage() {
+  // Extract unique categories from blogs
+  const uniqueCategories = Array.from(new Set(thoughts.map(t => t.category).filter(Boolean)))
+  const categories = ['All', ...uniqueCategories]
   return (
     <div style={{ backgroundColor: '#faf8f5' }}>
       <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -92,48 +57,54 @@ export default function ThoughtsPage() {
 
         {/* Thoughts Grid */}
         <div className="grid md:grid-cols-2 gap-6">
-          {thoughts.map((thought) => (
-            <Link
-              key={thought.slug}
-              href={`/blog/${thought.slug}`}
-              className="group p-6 rounded-lg transition-all hover:shadow-lg"
-              style={{ backgroundColor: '#f0e8e0' }}
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <span
-                  className="text-xs px-2 py-1 rounded-full"
-                  style={{ backgroundColor: '#c67b5c', color: '#faf8f5' }}
+          {thoughts.length > 0 ? (
+            thoughts.map((thought) => (
+              <Link
+                key={thought.slug}
+                href={`/blog/${thought.slug}`}
+                className="group p-6 rounded-lg transition-all hover:shadow-lg"
+                style={{ backgroundColor: '#f0e8e0' }}
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <span
+                    className="text-xs px-2 py-1 rounded-full"
+                    style={{ backgroundColor: '#c67b5c', color: '#faf8f5' }}
+                  >
+                    {thought.category}
+                  </span>
+                  <time className="text-xs text-gray-500">
+                    {new Date(thought.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric'
+                    })}
+                  </time>
+                </div>
+
+                <h2
+                  className="text-xl font-serif mb-2 group-hover:underline"
+                  style={{ color: '#c67b5c' }}
                 >
-                  {thought.category}
+                  {thought.title}
+                </h2>
+
+                <p className="text-gray-600 text-sm leading-relaxed">
+                  {thought.excerpt}
+                </p>
+
+                <span
+                  className="inline-block mt-4 text-sm font-medium"
+                  style={{ color: '#c67b5c' }}
+                >
+                  Read more →
                 </span>
-                <time className="text-xs text-gray-500">
-                  {new Date(thought.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric'
-                  })}
-                </time>
-              </div>
-
-              <h2
-                className="text-xl font-serif mb-2 group-hover:underline"
-                style={{ color: '#c67b5c' }}
-              >
-                {thought.title}
-              </h2>
-
-              <p className="text-gray-600 text-sm leading-relaxed">
-                {thought.excerpt}
-              </p>
-
-              <span
-                className="inline-block mt-4 text-sm font-medium"
-                style={{ color: '#c67b5c' }}
-              >
-                Read more →
-              </span>
-            </Link>
-          ))}
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-600 text-lg">No thoughts to share yet. Check back soon!</p>
+            </div>
+          )}
         </div>
 
         {/* Quote */}

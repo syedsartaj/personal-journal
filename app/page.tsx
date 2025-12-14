@@ -1,59 +1,30 @@
 import AuthorIntro from '@/components/AuthorIntro'
 import BlogCard from '@/components/BlogCard'
+import { getSmakslyBlogs, estimateReadTime, formatBlogDate, type SmakslyBlog } from '@/lib/smaksly-blogs'
 
-// Mock blog entries
-const mockEntries = [
-  {
-    id: '1',
-    title: 'Finding Peace in Morning Rituals',
-    excerpt: 'There\'s something magical about those quiet moments before the world wakes up. Just me, my coffee, and the soft glow of sunrise...',
-    date: '2024-03-15',
-    category: 'Reflections',
-    readTime: '3 min read'
-  },
-  {
-    id: '2',
-    title: 'A Letter to My Younger Self',
-    excerpt: 'If I could go back and whisper wisdom to the person I was ten years ago, I\'d start with this: it\'s okay to not have everything figured out...',
-    date: '2024-03-10',
-    category: 'Personal Growth',
-    readTime: '5 min read'
-  },
-  {
-    id: '3',
-    title: 'The Art of Slow Living',
-    excerpt: 'In a world that glorifies busy, I\'m learning to embrace the beauty of doing less. Today I spent an hour just watching the rain...',
-    date: '2024-03-05',
-    category: 'Lifestyle',
-    readTime: '4 min read'
-  },
-  {
-    id: '4',
-    title: 'Gratitude in the Ordinary',
-    excerpt: 'Sometimes the most profound moments hide in the mundane. The smell of fresh bread, a smile from a stranger, the weight of a good book...',
-    date: '2024-02-28',
-    category: 'Reflections',
-    readTime: '3 min read'
-  },
-  {
-    id: '5',
-    title: 'Growing Through the Seasons',
-    excerpt: 'Just like the garden outside my window, I\'m learning that growth isn\'t always visible. Sometimes we grow roots before we bloom...',
-    date: '2024-02-20',
-    category: 'Personal Growth',
-    readTime: '6 min read'
-  },
-  {
-    id: '6',
-    title: 'Coffee Shop Conversations',
-    excerpt: 'Met an elderly woman at my favorite coffee shop today. She told me stories about her travels, and I remembered why human connection matters...',
-    date: '2024-02-12',
-    category: 'Stories',
-    readTime: '4 min read'
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
+// Transform SmakslyBlog to BlogEntry format
+function transformBlogToEntry(blog: SmakslyBlog) {
+  // Extract excerpt from body (first 150 characters)
+  const excerpt = blog.body
+    .replace(/<[^>]*>/g, '') // Remove HTML tags
+    .substring(0, 150) + '...'
+
+  return {
+    id: blog.slug,
+    title: blog.title,
+    excerpt,
+    date: formatBlogDate(blog.publish_date),
+    category: blog.category || 'Uncategorized',
+    readTime: estimateReadTime(blog.body)
   }
-]
+}
 
-export default function Home() {
+export default async function Home() {
+  const blogs = await getSmakslyBlogs()
+  const entries = blogs.slice(0, 6).map(transformBlogToEntry)
   return (
     <div className="max-w-3xl mx-auto px-4 py-12">
       {/* Author Introduction */}
@@ -68,9 +39,15 @@ export default function Home() {
         </div>
 
         <div className="space-y-8">
-          {mockEntries.map((entry) => (
-            <BlogCard key={entry.id} entry={entry} />
-          ))}
+          {entries.length > 0 ? (
+            entries.map((entry) => (
+              <BlogCard key={entry.id} entry={entry} />
+            ))
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-charcoal/60 text-lg">No entries yet. Check back soon!</p>
+            </div>
+          )}
         </div>
       </section>
 
