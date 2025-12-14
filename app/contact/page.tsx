@@ -1,8 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -35,10 +33,8 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#faf8f5' }}>
-      <Header />
-
-      <main className="flex-grow container mx-auto px-4 py-12 max-w-4xl">
+    <div style={{ backgroundColor: '#faf8f5' }}>
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-serif mb-4" style={{ color: '#c67b5c' }}>
             Get in Touch
@@ -257,9 +253,7 @@ export default function ContactPage() {
             "The most important thing in communication is hearing what is not said." - Peter Drucker
           </p>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }

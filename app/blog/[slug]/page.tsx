@@ -1,5 +1,3 @@
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -145,10 +143,8 @@ export default function JournalEntryPage({ params }: { params: { slug: string } 
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#faf8f5' }}>
-      <Header />
-
-      <main className="flex-grow container mx-auto px-4 py-12 max-w-3xl">
+    <div style={{ backgroundColor: '#faf8f5' }}>
+      <div className="container mx-auto px-4 py-12 max-w-3xl">
         <Link
           href="/blog"
           className="inline-flex items-center text-sm mb-8 hover:underline"
@@ -217,9 +213,7 @@ export default function JournalEntryPage({ params }: { params: { slug: string } 
             </Link>
           </p>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }

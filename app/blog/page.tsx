@@ -1,5 +1,3 @@
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Link from 'next/link';
 
 // Sample journal entries - replace with your actual data source
@@ -56,10 +54,8 @@ const journalEntries = [
 
 export default function BlogPage() {
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#faf8f5' }}>
-      <Header />
-
-      <main className="flex-grow container mx-auto px-4 py-12 max-w-4xl">
+    <div style={{ backgroundColor: '#faf8f5' }}>
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
         <div className="mb-12">
           <h1 className="text-4xl md:text-5xl font-serif mb-4" style={{ color: '#c67b5c' }}>
             Journal Entries
@@ -126,9 +122,7 @@ export default function BlogPage() {
             </article>
           ))}
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 }
