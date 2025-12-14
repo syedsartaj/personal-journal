@@ -59,6 +59,21 @@ export interface JournalEntry {
   slug: string
 }
 
+// Entry interface for blog management system
+export interface Entry {
+  _id?: string
+  slug: string
+  title: string
+  content: string
+  mood: 'Happy' | 'Grateful' | 'Peaceful' | 'Excited' | 'Thoughtful' | 'Melancholy' | 'Anxious' | 'Hopeful'
+  coverImage?: string
+  date: Date
+  tags: string[]
+  private: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
 export interface Comment {
   _id?: string
   entryId: string
@@ -122,6 +137,95 @@ export async function updateJournalEntry(slug: string, updates: Partial<JournalE
   const result = await db
     .collection<JournalEntry>('entries')
     .updateOne({ slug }, { $set: { ...updates, updatedAt: new Date() } })
+
+  return result
+}
+
+// CRUD functions for Entry management system
+export async function getEntries(filterPrivate = true) {
+  const db = await getDatabase()
+  const filter = filterPrivate ? { private: false } : {}
+  const entries = await db
+    .collection<Entry>('blog_entries')
+    .find(filter)
+    .sort({ date: -1 })
+    .toArray()
+
+  return entries.map(entry => ({
+    ...entry,
+    _id: entry._id?.toString()
+  }))
+}
+
+export async function getAllEntries() {
+  const db = await getDatabase()
+  const entries = await db
+    .collection<Entry>('blog_entries')
+    .find()
+    .sort({ date: -1 })
+    .toArray()
+
+  return entries.map(entry => ({
+    ...entry,
+    _id: entry._id?.toString()
+  }))
+}
+
+export async function getEntryById(id: string) {
+  const db = await getDatabase()
+  const { ObjectId } = require('mongodb')
+
+  const entry = await db
+    .collection<Entry>('blog_entries')
+    .findOne({ _id: new ObjectId(id) })
+
+  if (!entry) return null
+
+  return {
+    ...entry,
+    _id: entry._id?.toString()
+  }
+}
+
+export async function createEntry(entry: Omit<Entry, '_id' | 'createdAt' | 'updatedAt'>) {
+  const db = await getDatabase()
+  const now = new Date()
+
+  const newEntry = {
+    ...entry,
+    createdAt: now,
+    updatedAt: now
+  }
+
+  const result = await db.collection<Entry>('blog_entries').insertOne(newEntry as Entry)
+
+  return {
+    ...newEntry,
+    _id: result.insertedId.toString()
+  }
+}
+
+export async function updateEntry(id: string, updates: Partial<Entry>) {
+  const db = await getDatabase()
+  const { ObjectId } = require('mongodb')
+
+  const result = await db
+    .collection<Entry>('blog_entries')
+    .updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { ...updates, updatedAt: new Date() } }
+    )
+
+  return result
+}
+
+export async function deleteEntry(id: string) {
+  const db = await getDatabase()
+  const { ObjectId } = require('mongodb')
+
+  const result = await db
+    .collection<Entry>('blog_entries')
+    .deleteOne({ _id: new ObjectId(id) })
 
   return result
 }
